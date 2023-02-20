@@ -1,10 +1,10 @@
 # Copyright (c) 2022, Alibaba Group Holding Limited
 
-cmake_minimum_required (VERSION 2.6)
-project (xquic)
+cmake_minimum_required(VERSION 2.6)
+project(xquic)
 
-set (xquic_VERSION_MAJOR 0)
-set (xquic_VERSION_MINOR 1)
+set(xquic_VERSION_MAJOR 0)
+set(xquic_VERSION_MINOR 1)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # build type
@@ -43,7 +43,7 @@ elseif(${SSL_TYPE} MATCHES "boringssl")
             set(SSL_LIB_PATH
                 ${SSL_PATH}/build/ssl/${CMAKE_BUILD_TYPE}/ssl.lib
                 ${SSL_PATH}/build/crypto/${CMAKE_BUILD_TYPE}/crypto.lib
-        )
+            )
         else()
             set(SSL_LIB_PATH
                 ${SSL_PATH}/build/ssl/libssl.a
@@ -74,15 +74,14 @@ if(XQC_COMPAT_DUPLICATE)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DXQC_COMPAT_DUPLICATE")
 endif()
 
-
 # print only error log
 if(XQC_ONLY_ERROR_LOG)
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -DXQC_ONLY_ERROR_LOG ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DXQC_ONLY_ERROR_LOG ")
 endif()
 
 # enable event log
 if(XQC_ENABLE_EVENT_LOG)
-    set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -DXQC_ENABLE_EVENT_LOG ")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DXQC_ENABLE_EVENT_LOG ")
 endif()
 
 # sendmmsg
@@ -90,12 +89,10 @@ if(XQC_SUPPORT_SENDMMSG_BUILD)
     add_definitions(-DXQC_SUPPORT_SENDMMSG)
 endif()
 
-#coverity
+# coverity
 if(GCOV STREQUAL "on")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
 endif()
-
-
 
 # C_FLAGS
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O2 -std=gnu11 -Wall -DNDEBUG_PRINT -DNPRINT_MALLOC ")
@@ -113,9 +110,8 @@ if(PLATFORM STREQUAL "mac32")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 endif()
 
-
 # configure file
-configure_file (
+configure_file(
     xqc_configure.h.in
     xqc_configure.h
 )
@@ -126,8 +122,6 @@ include_directories(
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}/include"
 )
-
-
 
 # http3/qpack source
 set(
@@ -174,7 +168,7 @@ set(
 )
 
 # TLS source
-set (
+set(
     TLS_SOURCE
     "src/tls/xqc_hkdf.c"
     "src/tls/xqc_null_crypto.c"
@@ -217,7 +211,6 @@ set(
     "src/common/utils/ringmem/xqc_ring_mem.c"
     "src/common/utils/2d_hash/xqc_2d_hash_table.c"
     "src/common/utils/var_buf/xqc_var_buf.c"
-
 )
 
 # congestion control
@@ -250,16 +243,14 @@ if(XQC_ENABLE_BBR2)
 endif()
 
 # xquic source
-set (
-    XQC_SOURCE 
+set(
+    XQC_SOURCE
     ${HTTP3_SOURCES}
     ${TRANSPORT_SOURCES}
     ${TLS_SOURCE}
     ${COMMON_SOURCES}
     ${CONGESTION_CONTROL_SOURCES}
 )
-
-
 
 # target
 add_library(
@@ -268,49 +259,46 @@ add_library(
     ${XQC_SOURCE}
 )
 
-add_library(
-    xquic
-    SHARED
-    ${XQC_SOURCE}
-)
-
-if(PLATFORM MATCHES "mac")
-    target_link_libraries(
-        xquic
-        "-ldl -Wl,-all_load"
-        ${SSL_LIB_PATH}
-        "-Wl"
-        -lpthread
-    )
-else()
-    target_link_libraries(
-        xquic
-        "-ldl -Wl,--whole-archive -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/scripts/xquic.lds"
-        ${SSL_LIB_PATH}
-        "-Wl,--no-whole-archive"
-        -lpthread
-    )
-endif()
-
-
+# add_library(
+# xquic
+# SHARED
+# ${XQC_SOURCE}
+# )
+#
+# if(PLATFORM MATCHES "mac")
+# target_link_libraries(
+# xquic
+# "-ldl -Wl,-all_load"
+# ${SSL_LIB_PATH}
+# "-Wl"
+# -lpthread
+# )
+# else()
+# target_link_libraries(
+# xquic
+# "-ldl -Wl,--whole-archive -Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/scripts/xquic.lds"
+# ${SSL_LIB_PATH}
+# "-Wl,--no-whole-archive"
+# -lpthread
+# )
+# endif()
 
 # Strip binary for release builds
 if(CMAKE_BUILD_TYPE STREQUAL MinSizeRel)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-            COMMAND ${CMAKE_STRIP} libxquic.so)
+        COMMAND ${CMAKE_STRIP} libxquic.so)
 endif()
-
 
 include_directories(${SSL_INC_PATH})
 include_directories(${CMAKE_SOURCE_DIR}/)
 
-
-##### build unittest, test client/server, demo client/server #####
-if (XQC_ENABLE_TESTING)
+# #### build unittest, test client/server, demo client/server #####
+if(XQC_ENABLE_TESTING)
     # CUnit TODO: fix test unit on windows
     find_package(CUnit 2.1)
     enable_testing()
     set(HAVE_CUNIT ${CUNIT_FOUND})
+
     if(HAVE_CUNIT)
         add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
     endif()
@@ -325,17 +313,18 @@ if (XQC_ENABLE_TESTING)
                 ${CMAKE_SOURCE_DIR}/third_party/wingetopt
             )
         endif()
+
         MESSAGE("GETOPT_INC_PATH= ${GETOPT_INC_PATH}")
-        
-        include_directories(${GETOPT_INC_PATH}/src)        
-        set(GETOPT_SOURCES  "${GETOPT_INC_PATH}/src/getopt.c")
+
+        include_directories(${GETOPT_INC_PATH}/src)
+        set(GETOPT_SOURCES "${GETOPT_INC_PATH}/src/getopt.c")
     endif()
 
-    ### test client/server ###
+    # ## test client/server ###
     add_executable(test_server tests/test_server.c ${GETOPT_SOURCES})
     add_executable(test_client tests/test_client.c ${GETOPT_SOURCES})
 
-    ### hq demo client/server ###
+    # ## hq demo client/server ###
     set(
         HQ_SOURCES
         "demo/xqc_hq_ctx.c"
@@ -357,13 +346,14 @@ if (XQC_ENABLE_TESTING)
 
     add_executable(demo_server ${DEMO_SERVER_SOURCES} ${GETOPT_SOURCES})
     add_executable(demo_client ${DEMO_CLIENT_SOURCES} ${GETOPT_SOURCES})
-    if(CMAKE_SYSTEM_NAME  MATCHES "Windows")
-        if (NOT EVENT_LIB_DIR)
+
+    if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+        if(NOT EVENT_LIB_DIR)
             message("YOU NEED SET -DEVENT_LIB_DIR=your_event_path, eg:-DEVENT_LIB_DIR=D:/project/vcpkg/packages/libevent_x64-windows-static")
         endif()
 
-        include_directories( ${EVENT_LIB_DIR}/include )
-        link_directories( ${EVENT_LIB_DIR}/lib )
+        include_directories(${EVENT_LIB_DIR}/include)
+        link_directories(${EVENT_LIB_DIR}/lib)
 
         SET(EVENT_LIB_PATH
             ${EVENT_LIB_DIR}/lib/event.lib
@@ -371,20 +361,20 @@ if (XQC_ENABLE_TESTING)
             ${EVENT_LIB_DIR}/lib/event_extra.lib
         )
     else()
-        link_directories( /usr/local/lib )
+        link_directories(/usr/local/lib)
     endif()
 
     if(PLATFORM STREQUAL "mac32")
-        target_link_libraries(test_server xquic  -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
-        target_link_libraries(test_client xquic  -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
-        target_link_libraries(demo_server xquic  -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
-        target_link_libraries(demo_client xquic  -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
+        target_link_libraries(test_server xquic -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
+        target_link_libraries(test_client xquic -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
+        target_link_libraries(demo_server xquic -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
+        target_link_libraries(demo_client xquic -lm ${CMAKE_CURRENT_SOURCE_DIR}/../libevent32/lib/libevent.dylib)
     elseif(PLATFORM STREQUAL "mac")
         target_link_libraries(test_server xquic -lm -L/usr/local/lib -levent)
         target_link_libraries(test_client xquic -lm -L/usr/local/lib -levent)
         target_link_libraries(demo_server xquic -lm -L/usr/local/lib -levent)
         target_link_libraries(demo_client xquic -lm -L/usr/local/lib -levent)
-    elseif(CMAKE_SYSTEM_NAME  MATCHES "Windows")
+    elseif(CMAKE_SYSTEM_NAME MATCHES "Windows")
         target_link_libraries(test_server xquic ${EVENT_LIB_PATH} -lm)
         target_link_libraries(test_client xquic ${EVENT_LIB_PATH} -lm)
         target_link_libraries(demo_server xquic ${EVENT_LIB_PATH} -lm)
@@ -395,6 +385,4 @@ if (XQC_ENABLE_TESTING)
         target_link_libraries(demo_server xquic -levent -lm)
         target_link_libraries(demo_client xquic -levent -lm)
     endif()
-
 endif()
-
